@@ -4,12 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B141B">
+    android:background="#0C1317">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#111B21">
+        android:background="#1F2C34">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/mainToolbar"
@@ -28,7 +28,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="QuickSender Pro"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#E9EDEF"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
@@ -36,11 +36,11 @@
                     android:id="@+id/badgeStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#202C33"
+                    android:background="#111B21"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="4dp"
-                    android:text="Ready"
-                    android:textColor="#00A884"
+                    android:text="Not Linked"
+                    android:textColor="#F15C6D"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
@@ -51,7 +51,7 @@
                     android:layout_marginStart="12dp"
                     android:padding="6dp"
                     android:src="@android:drawable/ic_menu_manage"
-                    app:tint="#8696A0" />
+                    app:tint="#AEBAC1" />
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -59,7 +59,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
+        android:padding="14dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -67,12 +67,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- 1. Pairing Card -->
+            <!-- 1. WhatsApp Pairing Code Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="#111B21"
-                app:cardCornerRadius="14dp">
+                app:cardBackgroundColor="#1F2C34"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -81,18 +82,25 @@
                     android:padding="16dp">
 
                     <TextView
-                        android:id="@+id/tvTitlePair"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="WhatsApp Device Connection"
+                        android:text="1. WhatsApp Device Linking"
                         android:textColor="#00A884"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Official pairing code connection directly to WhatsApp Web"
+                        android:textColor="#8696A0"
+                        android:textSize="12sp" />
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="12dp"
                         android:orientation="horizontal">
 
                         <EditText
@@ -100,11 +108,11 @@
                             android:layout_width="0dp"
                             android:layout_height="48dp"
                             android:layout_weight="1"
-                            android:background="#202C33"
+                            android:background="#111B21"
                             android:hint="Your Phone (+91...)"
                             android:inputType="phone"
                             android:paddingHorizontal="12dp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#E9EDEF"
                             android:textColorHint="#8696A0"
                             android:textSize="14sp" />
 
@@ -119,26 +127,46 @@
                             android:textStyle="bold" />
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tvCodeDisplay"
+                    <!-- Real 8-Digit Display -->
+                    <LinearLayout
+                        android:id="@+id/layoutPairingResult"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="12dp"
+                        android:background="#111B21"
                         android:gravity="center"
-                        android:textColor="#25D366"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:visibility="gone" />
+                        android:orientation="vertical"
+                        android:padding="12dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tvCodeDisplay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.2"
+                            android:textColor="#25D366"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Enter this in WhatsApp -> Linked Devices -> Link with Phone"
+                            android:textColor="#8696A0"
+                            android:textSize="11sp" />
+                    </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- 2. Groups & Audience Section -->
+            <!-- 2. Target Group & Member List Management -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="#111B21"
-                app:cardCornerRadius="14dp">
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="#1F2C34"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -152,11 +180,10 @@
                         android:gravity="center_vertical">
 
                         <TextView
-                            android:id="@+id/tvTitleAudience"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Target Audience / Group"
+                            android:text="2. Audience &amp; Recipients"
                             android:textColor="#00A884"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -165,37 +192,58 @@
                             android:id="@+id/btnAddMembersAction"
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
-                            android:backgroundTint="#202C33"
+                            android:backgroundTint="#00A884"
                             android:text="+ Add Numbers"
-                            android:textColor="#00A884"
-                            android:textSize="12sp" />
+                            android:textColor="#111B21"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <Spinner
                         android:id="@+id/spGroups"
                         android:layout_width="match_parent"
-                        android:layout_height="46dp"
+                        android:layout_height="44dp"
                         android:layout_marginTop="10dp"
-                        android:background="#202C33" />
+                        android:background="#111B21" />
 
-                    <TextView
-                        android:id="@+id/tvGroupStats"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="0 recipients in this group"
-                        android:textColor="#8696A0"
-                        android:textSize="13sp" />
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvGroupStats"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="0 recipients in this group"
+                            android:textColor="#8696A0"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/btnViewMembersList"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:padding="4dp"
+                            android:text="View / Remove Numbers ➔"
+                            android:textColor="#53BDEB"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- 3. Message & Live Preview Card -->
+            <!-- 3. Message Compose & Authentic WhatsApp Preview -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="#111B21"
-                app:cardCornerRadius="14dp">
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="#1F2C34"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -204,10 +252,9 @@
                     android:padding="16dp">
 
                     <TextView
-                        android:id="@+id/tvTitleMessage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Message Content"
+                        android:text="3. Message &amp; Media"
                         android:textColor="#00A884"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -215,13 +262,13 @@
                     <EditText
                         android:id="@+id/etMessageInput"
                         android:layout_width="match_parent"
-                        android:layout_height="100dp"
+                        android:layout_height="90dp"
                         android:layout_marginTop="10dp"
-                        android:background="#202C33"
+                        android:background="#111B21"
                         android:gravity="top|start"
-                        android:hint="Type message or caption..."
+                        android:hint="Type message or media caption..."
                         android:padding="12dp"
-                        android:textColor="#FFFFFF"
+                        android:textColor="#E9EDEF"
                         android:textColorHint="#8696A0"
                         android:textSize="14sp" />
 
@@ -235,8 +282,8 @@
                         <Button
                             android:id="@+id/btnAttachMedia"
                             android:layout_width="wrap_content"
-                            android:layout_height="40dp"
-                            android:backgroundTint="#202C33"
+                            android:layout_height="38dp"
+                            android:backgroundTint="#111B21"
                             android:text="📎 Attach Media"
                             android:textColor="#E9EDEF"
                             android:textSize="12sp" />
@@ -254,12 +301,12 @@
                             android:textSize="12sp" />
                     </LinearLayout>
 
-                    <!-- WhatsApp Live Preview Bubble -->
+                    <!-- Authentic WhatsApp Wallpaper Preview Container -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="Live Preview:"
+                        android:layout_marginTop="14dp"
+                        android:text="WhatsApp Real-Time Chat Preview"
                         android:textColor="#8696A0"
                         android:textSize="12sp" />
 
@@ -267,25 +314,63 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:background="#005C4B"
-                        android:orientation="vertical"
-                        android:padding="10dp">
+                        android:background="#0B141A"
+                        android:gravity="end"
+                        android:padding="12dp">
 
-                        <ImageView
-                            android:id="@+id/ivPreviewMedia"
-                            android:layout_width="match_parent"
-                            android:layout_height="140dp"
-                            android:scaleType="centerCrop"
-                            android:visibility="gone" />
-
-                        <TextView
-                            android:id="@+id/tvPreviewText"
-                            android:layout_width="match_parent"
+                        <!-- Real WhatsApp Green Outgoing Bubble -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Your message preview appears here..."
-                            android:textColor="#E9EDEF"
-                            android:textSize="13sp" />
+                            android:layout_marginStart="40dp"
+                            android:background="#005C4B"
+                            android:orientation="vertical"
+                            android:padding="6dp">
+
+                            <ImageView
+                                android:id="@+id/ivPreviewMedia"
+                                android:layout_width="240dp"
+                                android:layout_height="160dp"
+                                android:scaleType="centerCrop"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/tvPreviewText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="4dp"
+                                android:layout_marginTop="4dp"
+                                android:maxWidth="240dp"
+                                android:text="Hello, this is your preview!"
+                                android:textColor="#E9EDEF"
+                                android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="end"
+                                android:layout_marginTop="2dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/tvPreviewTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="07:55 PM"
+                                    android:textColor="#8696A0"
+                                    android:textSize="11sp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="4dp"
+                                    android:text="✓✓"
+                                    android:textColor="#53BDEB"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -294,9 +379,10 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="#111B21"
-                app:cardCornerRadius="14dp">
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="#1F2C34"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -316,10 +402,10 @@
                         android:id="@+id/tvDelayDisplay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="4dp"
                         android:text="Delay between messages: 5 to 10 seconds"
                         android:textColor="#8696A0"
-                        android:textSize="13sp" />
+                        android:textSize="12sp" />
 
                     <SeekBar
                         android:id="@+id/sbDelay"
@@ -335,13 +421,13 @@
             <Button
                 android:id="@+id/btnStartDispatch"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="30dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="24dp"
                 android:backgroundTint="#00A884"
                 android:text="Start Silent Broadcast"
                 android:textColor="#111B21"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -351,7 +437,16 @@
                 android:gravity="center"
                 android:textColor="#25D366"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <!-- Hidden Headless Engine WebView -->
+            <WebView
+                android:id="@+id/headlessWebView"
+                android:layout_width="1dp"
+                android:layout_height="1dp"
+                android:visibility="invisible" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
