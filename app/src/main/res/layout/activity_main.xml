@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#111B21"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="QuickSender Engine"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvEngineStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="#202C33"
+            android:padding="12dp"
+            android:text="Status: Engine Starting..."
+            android:textColor="#00A884"
+            android:textSize="14sp" />
+
+        <!-- Pairing Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="1. Link WhatsApp (Pairing Code)"
+            android:textColor="#E9EDEF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/etPhoneNumber"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:background="#202C33"
+            android:hint="Enter Phone with Country Code (e.g. 919876543210)"
+            android:inputType="phone"
+            android:paddingHorizontal="12dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8696A0"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnGetPairingCode"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="#00A884"
+            android:text="Get 8-Digit Pairing Code"
+            android:textColor="#111B21"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvPairingCodeDisplay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:padding="10dp"
+            android:textColor="#25D366"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <!-- Message Broadcast Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="2. Test Silent Background Dispatch"
+            android:textColor="#E9EDEF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/etTargetNumber"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:background="#202C33"
+            android:hint="Recipient Number (e.g. 919876543210)"
+            android:inputType="phone"
+            android:paddingHorizontal="12dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8696A0"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/etMessageBody"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="10dp"
+            android:background="#202C33"
+            android:gravity="top|start"
+            android:hint="Message content..."
+            android:padding="12dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8696A0"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnSendMessage"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#00A884"
+            android:text="Send Silently (Zero Screen Jump)"
+            android:textColor="#111B21"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</ScrollView>
