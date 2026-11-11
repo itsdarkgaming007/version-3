@@ -1,4 +1,4 @@
-name: Build Embedded Engine APK
+name: Build QuickSender Pro APK
 
 on:
   push:
@@ -31,5 +31,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: QuickSender-Engine-APK
+        name: QuickSender-Pro-APK
         path: app/build/outputs/apk/debug/*.apk
