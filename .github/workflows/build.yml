@@ -19,25 +19,6 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-
-    - name: Download Statically-Compiled Node Binary for Android
-      run: |
-        mkdir -p app/src/main/assets/nodejs-project/bin
-        # Download standalone statically linked node for arm64
-        curl -L -s https://github.com/containerd/nerdctl/releases/download/v1.7.0/nerdctl-1.7.0-linux-arm64.tar.gz > /dev/null || true
-        # Fetch verified standalone nodejs arm64 binary
-        curl -L -o app/src/main/assets/nodejs-project/bin/node https://raw.githubusercontent.com/shadawck/termux-binaries/master/bin/node || true
-        chmod +x app/src/main/assets/nodejs-project/bin/node || true
-
-    - name: Install Baileys Packages inside Assets
-      run: |
-        cd app/src/main/assets/nodejs-project
-        npm install --production
-
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
       with:
