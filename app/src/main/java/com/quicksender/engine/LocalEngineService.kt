@@ -64,9 +64,22 @@ class LocalEngineService : Service() {
                 copyAssetFolder("nodejs-project", projectDir)
 
                 val mainScript = File(projectDir, "main.js")
-                val builder = ProcessBuilder("node", mainScript.absolutePath)
+                
+                // Locate the bundled native node engine
+                val nativeLibDir = applicationInfo.nativeLibraryDir
+                val bundledNode = File(nativeLibDir, "libnode.so")
+
+                val executable = if (bundledNode.exists()) {
+                    bundledNode.setExecutable(true)
+                    bundledNode.absolutePath
+                } else {
+                    "node"
+                }
+
+                val builder = ProcessBuilder(executable, mainScript.absolutePath)
                 builder.directory(projectDir)
                 builder.environment()["NODE_FILES_DIR"] = filesDir.absolutePath
+                builder.redirectErrorStream(true)
                 engineProcess = builder.start()
             } catch (e: Exception) {
                 e.printStackTrace()
