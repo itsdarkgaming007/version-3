@@ -47,7 +47,6 @@ class MainActivity : AppCompatActivity() {
     private val groupList = mutableListOf<String>()
     private var isConnected = false
 
-    // Automated Permission Request Launcher
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { _ ->
@@ -69,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initViews() {
         tvEngineBadge = findViewById(R.id.tvEngineBadge)
-        tvPairingResult = findViewById(R.id.tvPairingResult)
+        tvPairingResult = findViewById(R.id.tvPairingCodeResult)
         spGroups = findViewById(R.id.spGroups)
         tvGroupCount = findViewById(R.id.tvGroupMembersCount)
         tvProgress = findViewById(R.id.tvBroadcastProgress)
@@ -271,7 +270,7 @@ class MainActivity : AppCompatActivity() {
                     mainHandler.post {
                         tvProgress.text = "Broadcasting: $sent / ${numbers.size}"
                     }
-                    Thread.sleep(4000) // Delay to avoid WhatsApp spam triggers
+                    Thread.sleep(4000)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
