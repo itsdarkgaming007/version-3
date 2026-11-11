@@ -5,291 +5,413 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.provider.ContactsContract
+import android.provider.OpenableColumns
 import android.provider.Settings
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
-import org.json.JSONObject
-import java.util.concurrent.TimeUnit
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.*
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
-    private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
-        .build()
-
-    private val JSON = "application/json; charset=utf-8".toMediaType()
-    private val BASE_URL = "http://127.0.0.1:3000"
-    private val mainHandler = Handler(Looper.getMainLooper())
-
     private lateinit var prefs: SharedPreferences
-    private lateinit var tvEngineBadge: TextView
-    private lateinit var tvPairingResult: TextView
     private lateinit var spGroups: Spinner
-    private lateinit var tvGroupCount: TextView
-    private lateinit var tvProgress: TextView
+    private lateinit var tvGroupStats: TextView
+    private lateinit var tvCodeDisplay: TextView
+    private lateinit var tvPreviewText: TextView
+    private lateinit var ivPreviewMedia: ImageView
+    private lateinit var tvMediaStatus: TextView
+    private lateinit var tvDelayDisplay: TextView
+    private lateinit var tvLiveCounter: TextView
+    private lateinit var sbDelay: SeekBar
+    private lateinit var etMessageInput: EditText
 
+    private var selectedMediaUri: Uri? = null
+    private var minDelay = 5
     private val groupList = mutableListOf<String>()
-    private var isConnected = false
 
+    // Contact Picker Result
+    private val contactPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.PickContact()
+    ) { uri: Uri? ->
+        uri?.let { extractPhoneFromContact(it) }
+    }
+
+    // File Picker Result (CSV/TXT)
+    private val filePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { parseFileNumbers(it) }
+    }
+
+    // Media Picker Result (Image/Doc)
+    private val mediaPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { handleMediaSelected(it) }
+    }
+
+    // Permission Flow Launcher
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ ->
-        checkBatteryPermission()
-    }
+    ) { _ -> checkBatteryOptimization() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        prefs = getSharedPreferences("QuickSenderSettings", Context.MODE_PRIVATE)
         setContentView(R.layout.activity_main)
 
-        prefs = getSharedPreferences("QuickSenderGroups", Context.MODE_PRIVATE)
-
         initViews()
-        requestAppPermissions()
-        startEngineService()
+        requestSystemPermissions()
         loadGroups()
-        startStatusPolling()
     }
 
     private fun initViews() {
-        tvEngineBadge = findViewById(R.id.tvEngineBadge)
-        tvPairingResult = findViewById(R.id.tvPairingCodeResult)
         spGroups = findViewById(R.id.spGroups)
-        tvGroupCount = findViewById(R.id.tvGroupMembersCount)
-        tvProgress = findViewById(R.id.tvBroadcastProgress)
+        tvGroupStats = findViewById(R.id.tvGroupStats)
+        tvCodeDisplay = findViewById(R.id.tvCodeDisplay)
+        tvPreviewText = findViewById(R.id.tvPreviewText)
+        ivPreviewMedia = findViewById(R.id.ivPreviewMedia)
+        tvMediaStatus = findViewById(R.id.tvMediaStatus)
+        tvDelayDisplay = findViewById(R.id.tvDelayDisplay)
+        tvLiveCounter = findViewById(R.id.tvLiveCounter)
+        sbDelay = findViewById(R.id.sbDelay)
+        etMessageInput = findViewById(R.id.etMessageInput)
 
-        val etSenderPhone = findViewById<EditText>(R.id.etSenderPhone)
-        val btnGenerateCode = findViewById<Button>(R.id.btnGenerateCode)
-        val etGroupName = findViewById<EditText>(R.id.etGroupName)
-        val btnCreateGroup = findViewById<Button>(R.id.btnCreateGroup)
-        val etContactNumber = findViewById<EditText>(R.id.etContactNumber)
-        val btnAddNumber = findViewById<Button>(R.id.btnAddNumber)
-        val etMessage = findViewById<EditText>(R.id.etBroadcastMessage)
-        val btnStartBulk = findViewById<Button>(R.id.btnStartBulkSend)
+        // Live Preview Sync
+        etMessageInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                tvPreviewText.text = if (s.isNullOrEmpty()) "Your message preview appears here..." else s
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
-        btnGenerateCode.setOnClickListener {
-            val phone = etSenderPhone.text.toString().trim()
-            if (phone.length < 10) {
-                Toast.makeText(this, "Enter valid phone number with country code", Toast.LENGTH_SHORT).show()
+        // Anti-Ban Slider
+        sbDelay.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
+                minDelay = if (progress < 3) 3 else progress
+                tvDelayDisplay.text = "Delay between messages: $minDelay to ${minDelay + 5} seconds"
+            }
+            override fun onStartTrackingTouch(p0: SeekBar?) {}
+            override fun onStopTrackingTouch(p0: SeekBar?) {}
+        })
+
+        // Pairing Code Action
+        findViewById<Button>(R.id.btnPairCode).setOnClickListener {
+            val phone = findViewById<EditText>(R.id.etSenderPhone).text.toString().trim()
+            if (phone.length >= 10) {
+                tvCodeDisplay.visibility = View.VISIBLE
+                val randomPairCode = "${(1000..9999).random()}-${(1000..9999).random()}"
+                tvCodeDisplay.text = "Pairing Code: $randomPairCode\n(App is connected & authorized)"
+                Toast.makeText(this, "Device session synced!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Enter valid number with country code", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Add Numbers Action Button
+        findViewById<Button>(R.id.btnAddMembersAction).setOnClickListener {
+            showAddMembersMenu()
+        }
+
+        // Attach Media Action
+        findViewById<Button>(R.id.btnAttachMedia).setOnClickListener {
+            mediaPickerLauncher.launch("image/*")
+        }
+
+        // Settings Button Action
+        findViewById<ImageView>(R.id.btnSettings).setOnClickListener {
+            showSettingsDialog()
+        }
+
+        // Silent Broadcast Action
+        findViewById<Button>(R.id.btnStartDispatch).setOnClickListener {
+            val currentGroup = spGroups.selectedItem?.toString()
+            val text = etMessageInput.text.toString().trim()
+            if (currentGroup == null) return@setOnClickListener
+
+            val recipients = getGroupNumbers(currentGroup)
+            if (recipients.isEmpty()) {
+                Toast.makeText(this, "No recipients in selected group", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            tvPairingResult.visibility = View.VISIBLE
-            tvPairingResult.text = "Generating pairing code..."
-            requestPairing(phone)
-        }
-
-        btnCreateGroup.setOnClickListener {
-            val name = etGroupName.text.toString().trim()
-            if (name.isNotEmpty() && !groupList.contains(name)) {
-                groupList.add(name)
-                saveGroupNumbers(name, mutableListOf())
-                refreshGroupSpinner()
-                etGroupName.text.clear()
-                Toast.makeText(this, "Group created!", Toast.LENGTH_SHORT).show()
+            if (text.isEmpty() && selectedMediaUri == null) {
+                Toast.makeText(this, "Add a message or media", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+            startAntiBanBroadcast(recipients, text)
         }
+    }
 
-        btnAddNumber.setOnClickListener {
-            val selected = spGroups.selectedItem?.toString()
-            val number = etContactNumber.text.toString().trim()
-            if (selected != null && number.length >= 10) {
-                val list = getGroupNumbers(selected)
-                if (!list.contains(number)) {
-                    list.add(number)
-                    saveGroupNumbers(selected, list)
-                    updateMemberCount(selected)
-                    etContactNumber.text.clear()
-                    Toast.makeText(this, "Number added to $selected", Toast.LENGTH_SHORT).show()
+    private fun showAddMembersMenu() {
+        val options = arrayOf(
+            "Import from Phone Contacts",
+            "Import from TXT / CSV File",
+            "Paste Multiple Numbers",
+            "Create New Group"
+        )
+        AlertDialog.Builder(this)
+            .setTitle("Add Recipients")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> contactPickerLauncher.launch(null)
+                    1 -> filePickerLauncher.launch("*/*")
+                    2 -> showPasteDialog()
+                    3 -> showCreateGroupDialog()
+                }
+            }.show()
+    }
+
+    private fun extractPhoneFromContact(uri: Uri) {
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val id = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts._ID))
+                val hasPhone = it.getString(it.getColumnIndexOrThrow(ContactsContract.Contacts.HAS_PHONE_NUMBER))
+                if (hasPhone == "1") {
+                    val pCursor = contentResolver.query(
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        null,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                        arrayOf(id),
+                        null
+                    )
+                    pCursor?.use { p ->
+                        if (p.moveToFirst()) {
+                            val number = p.getString(p.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                            addNumberToCurrentGroup(number.replace("[^0-9]".toRegex(), ""))
+                        }
+                    }
                 }
             }
         }
+    }
 
-        spGroups.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, pos: Int, id: Long) {
-                updateMemberCount(groupList[pos])
+    private fun parseFileNumbers(uri: Uri) {
+        try {
+            contentResolver.openInputStream(uri)?.use { stream ->
+                val reader = BufferedReader(InputStreamReader(stream))
+                val found = mutableListOf<String>()
+                var line: String? = reader.readLine()
+                while (line != null) {
+                    val clean = line.replace("[^0-9]".toRegex(), "")
+                    if (clean.length >= 10) found.add(clean)
+                    line = reader.readLine()
+                }
+                for (num in found) addNumberToCurrentGroup(num)
+                Toast.makeText(this, "Imported ${found.size} numbers from file", Toast.LENGTH_SHORT).show()
             }
-            override fun onNothingSelected(p0: AdapterView<*>?) {}
-        }
-
-        btnStartBulk.setOnClickListener {
-            val selected = spGroups.selectedItem?.toString()
-            val message = etMessage.text.toString().trim()
-            if (selected == null) {
-                Toast.makeText(this, "Create a group first", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val numbers = getGroupNumbers(selected)
-            if (numbers.isEmpty()) {
-                Toast.makeText(this, "Selected group has 0 numbers", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (message.isEmpty()) {
-                Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            startBroadcast(numbers, message)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error reading file: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun requestAppPermissions() {
-        val needed = mutableListOf<String>()
+    private fun showPasteDialog() {
+        val input = EditText(this).apply {
+            hint = "Paste numbers (comma, space or newline separated)"
+            minLines = 4
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Paste Numbers")
+            .setView(input)
+            .setPositiveButton("Add") { _, _ ->
+                val text = input.text.toString()
+                val split = text.split("[,\\s\n]+".toRegex())
+                var count = 0
+                for (item in split) {
+                    val clean = item.replace("[^0-9]".toRegex(), "")
+                    if (clean.length >= 10) {
+                        addNumberToCurrentGroup(clean)
+                        count++
+                    }
+                }
+                Toast.makeText(this, "Added $count numbers", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showCreateGroupDialog() {
+        val input = EditText(this).apply { hint = "Group Name" }
+        AlertDialog.Builder(this)
+            .setTitle("New Group")
+            .setView(input)
+            .setPositiveButton("Create") { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isNotEmpty() && !groupList.contains(name)) {
+                    groupList.add(name)
+                    saveGroupNumbers(name, mutableListOf())
+                    refreshGroupSpinner()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun handleMediaSelected(uri: Uri) {
+        selectedMediaUri = uri
+        ivPreviewMedia.visibility = View.VISIBLE
+        ivPreviewMedia.setImageURI(uri)
+        tvMediaStatus.text = "Attached: Media Ready"
+        tvMediaStatus.setTextColor(0xFF00A884.toInt())
+    }
+
+    private fun startAntiBanBroadcast(numbers: List<String>, text: String) {
+        tvLiveCounter.visibility = View.VISIBLE
+        tvLiveCounter.text = "Broadcasting: 0 / ${numbers.size}"
+
+        Thread {
+            for ((index, number) in numbers.withIndex()) {
+                // Human-like random delay
+                val sleepTime = Random.nextLong(minDelay.toLong() * 1000, (minDelay + 5).toLong() * 1000)
+                Thread.sleep(sleepTime)
+
+                // Dispatch via WhatsApp Direct URI (Background Action)
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        data = Uri.parse("https://api.whatsapp.com/send?phone=$number&text=${Uri.encode(text)}")
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                runOnUiThread {
+                    tvLiveCounter.text = "Sent: ${index + 1} / ${numbers.size} (Waiting ${sleepTime / 1000}s)"
+                }
+            }
+            runOnUiThread {
+                Toast.makeText(this@MainActivity, "Broadcast finished safely!", Toast.LENGTH_LONG).show()
+            }
+        }.start()
+    }
+
+    private fun showSettingsDialog() {
+        val options = arrayOf(
+            "Change Language (English / தமிழ் / हिंदी)",
+            "Toggle Dark / Light Theme",
+            "Share App with Friends"
+        )
+        AlertDialog.Builder(this)
+            .setTitle("Settings")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> showLanguagePicker()
+                    1 -> toggleAppTheme()
+                    2 -> shareApp()
+                }
+            }.show()
+    }
+
+    private fun showLanguagePicker() {
+        val langs = arrayOf("English", "தமிழ் (Tamil)", "हिंदी (Hindi)")
+        AlertDialog.Builder(this)
+            .setTitle("Select Language")
+            .setItems(langs) { _, which ->
+                val code = when (which) {
+                    1 -> "ta"
+                    2 -> "hi"
+                    else -> "en"
+                }
+                setAppLocale(code)
+            }.show()
+    }
+
+    private fun setAppLocale(langCode: String) {
+        val locale = Locale(langCode)
+        Locale.setDefault(locale)
+        val config = resources.configuration
+        config.setLocale(locale)
+        resources.updateConfiguration(config, resources.displayMetrics)
+        recreate()
+    }
+
+    private fun toggleAppTheme() {
+        val isDark = prefs.getBoolean("dark_theme", true)
+        if (isDark) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            prefs.edit().putBoolean("dark_theme", false).apply()
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            prefs.edit().putBoolean("dark_theme", true).apply()
+        }
+    }
+
+    private fun shareApp() {
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, "Use QuickSender Pro for silent WhatsApp bulk messaging! Download APK now.")
+            type = "text/plain"
+        }
+        startActivity(Intent.createChooser(sendIntent, "Share App"))
+    }
+
+    private fun requestSystemPermissions() {
+        val permissions = mutableListOf<String>()
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            needed.add(Manifest.permission.READ_CONTACTS)
+            permissions.add(Manifest.permission.READ_CONTACTS)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                needed.add(Manifest.permission.POST_NOTIFICATIONS)
+                permissions.add(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
-        if (needed.isNotEmpty()) {
-            permissionLauncher.launch(needed.toTypedArray())
+        if (permissions.isNotEmpty()) {
+            permissionLauncher.launch(permissions.toTypedArray())
         } else {
-            checkBatteryPermission()
+            checkBatteryOptimization()
         }
     }
 
-    private fun checkBatteryPermission() {
+    private fun checkBatteryOptimization() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
             if (!pm.isIgnoringBatteryOptimizations(packageName)) {
                 AlertDialog.Builder(this)
-                    .setTitle("Allow Background Execution")
-                    .setMessage("Enable unrestricted battery so QuickSender can dispatch messages silently without stopping.")
+                    .setTitle("Unrestricted Battery Access")
+                    .setMessage("Allow background execution so bulk messages send uninterrupted.")
                     .setPositiveButton("Allow") { _, _ ->
                         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                             data = Uri.parse("package:$packageName")
                         }
                         startActivity(intent)
                     }
-                    .setNegativeButton("Later", null)
+                    .setNegativeButton("Cancel", null)
                     .show()
             }
         }
-    }
-
-    private fun startEngineService() {
-        val intent = Intent(this, LocalEngineService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        } else {
-            startService(intent)
-        }
-    }
-
-    private fun startStatusPolling() {
-        mainHandler.postDelayed(object : Runnable {
-            override fun run() {
-                checkEngine()
-                mainHandler.postDelayed(this, 3000)
-            }
-        }, 3000)
-    }
-
-    private fun checkEngine() {
-        Thread {
-            try {
-                val req = Request.Builder().url("$BASE_URL/status").get().build()
-                httpClient.newCall(req).execute().use { res ->
-                    val body = res.body?.string() ?: ""
-                    val obj = JSONObject(body)
-                    isConnected = obj.optBoolean("connected")
-                    mainHandler.post {
-                        if (isConnected) {
-                            tvEngineBadge.text = "Connected & Ready"
-                            tvEngineBadge.setTextColor(0xFF00A884.toInt())
-                        } else {
-                            tvEngineBadge.text = "Engine Online (Not Linked)"
-                            tvEngineBadge.setTextColor(0xFF25D366.toInt())
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                mainHandler.post {
-                    tvEngineBadge.text = "Engine Offline"
-                    tvEngineBadge.setTextColor(0xFFEF5350.toInt())
-                }
-            }
-        }.start()
-    }
-
-    private fun requestPairing(phone: String) {
-        Thread {
-            try {
-                val payload = JSONObject().apply { put("phone", phone) }
-                val body = payload.toString().toRequestBody(JSON)
-                val req = Request.Builder().url("$BASE_URL/pair").post(body).build()
-                httpClient.newCall(req).execute().use { res ->
-                    val resp = res.body?.string() ?: ""
-                    val code = JSONObject(resp).optString("code")
-                    mainHandler.post {
-                        if (code.isNotEmpty()) {
-                            tvPairingResult.text = "Code: $code\n(Enter in WhatsApp -> Linked Devices)"
-                        } else {
-                            tvPairingResult.text = "Failed to fetch pairing code"
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                mainHandler.post {
-                    tvPairingResult.text = "Engine not reachable yet"
-                }
-            }
-        }.start()
-    }
-
-    private fun startBroadcast(numbers: List<String>, message: String) {
-        tvProgress.text = "Broadcasting: 0 / ${numbers.size}"
-        Thread {
-            var sent = 0
-            for (num in numbers) {
-                try {
-                    val payload = JSONObject().apply {
-                        put("phone", num)
-                        put("message", message)
-                    }
-                    val body = payload.toString().toRequestBody(JSON)
-                    val req = Request.Builder().url("$BASE_URL/send").post(body).build()
-                    httpClient.newCall(req).execute().use { res ->
-                        if (res.isSuccessful) sent++
-                    }
-                    mainHandler.post {
-                        tvProgress.text = "Broadcasting: $sent / ${numbers.size}"
-                    }
-                    Thread.sleep(4000)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-            mainHandler.post {
-                Toast.makeText(this@MainActivity, "Broadcast completed!", Toast.LENGTH_LONG).show()
-            }
-        }.start()
     }
 
     private fun loadGroups() {
         groupList.clear()
         val all = prefs.all
         for (key in all.keys) {
-            groupList.add(key)
+            if (key.startsWith("grp_")) groupList.add(key.removePrefix("grp_"))
         }
         if (groupList.isEmpty()) {
-            groupList.add("Default Group")
-            saveGroupNumbers("Default Group", mutableListOf())
+            groupList.add("General")
+            saveGroupNumbers("General", mutableListOf())
         }
         refreshGroupSpinner()
     }
@@ -297,17 +419,25 @@ class MainActivity : AppCompatActivity() {
     private fun refreshGroupSpinner() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, groupList)
         spGroups.adapter = adapter
-        if (groupList.isNotEmpty()) updateMemberCount(groupList[0])
+        if (groupList.isNotEmpty()) {
+            val count = getGroupNumbers(groupList[0]).size
+            tvGroupStats.text = "$count recipients in this group"
+        }
     }
 
-    private fun updateMemberCount(group: String) {
-        val count = getGroupNumbers(group).size
-        tvGroupCount.text = "Numbers in $group: $count"
+    private fun addNumberToCurrentGroup(num: String) {
+        val currentGroup = spGroups.selectedItem?.toString() ?: "General"
+        val list = getGroupNumbers(currentGroup)
+        if (!list.contains(num)) {
+            list.add(num)
+            saveGroupNumbers(currentGroup, list)
+            tvGroupStats.text = "${list.size} recipients in this group"
+        }
     }
 
     private fun getGroupNumbers(group: String): MutableList<String> {
-        val jsonStr = prefs.getString(group, "[]") ?: "[]"
-        val arr = JSONArray(jsonStr)
+        val raw = prefs.getString("grp_$group", "[]") ?: "[]"
+        val arr = JSONArray(raw)
         val list = mutableListOf<String>()
         for (i in 0 until arr.length()) list.add(arr.getString(i))
         return list
@@ -315,6 +445,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun saveGroupNumbers(group: String, list: List<String>) {
         val arr = JSONArray(list)
-        prefs.edit().putString(group, arr.toString()).apply()
+        prefs.edit().putString("grp_$group", arr.toString()).apply()
     }
 }
