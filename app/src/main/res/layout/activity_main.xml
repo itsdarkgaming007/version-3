@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0C1317">
+    android:background="#0B141B">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -24,6 +24,7 @@
                 android:paddingEnd="16dp">
 
                 <TextView
+                    android:id="@+id/tvAppTitle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -32,23 +33,10 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/badgeStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="#111B21"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
-                    android:text="Not Linked"
-                    android:textColor="#F15C6D"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
                 <ImageView
                     android:id="@+id/btnSettings"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
-                    android:layout_marginStart="12dp"
                     android:padding="6dp"
                     android:src="@android:drawable/ic_menu_manage"
                     app:tint="#AEBAC1" />
@@ -56,398 +44,345 @@
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="14dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <!-- 1. EMPTY STATE (When 0 groups exist) -->
         <LinearLayout
+            android:id="@+id/layoutEmptyState"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="32dp"
+            android:visibility="gone">
 
-            <!-- 1. WhatsApp Pairing Code Card -->
-            <androidx.cardview.widget.CardView
+            <TextView
+                android:id="@+id/tvEmptyTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Groups Created Yet"
+                android:textColor="#E9EDEF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvEmptyDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="Tap the + button to create a group (up to 300 members per group)"
+                android:textColor="#8696A0"
+                android:textSize="13sp" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabCreateFirstGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:backgroundTint="#00A884"
+                android:src="@android:drawable/ic_input_add"
+                app:elevation="6dp"
+                app:fabCustomSize="64dp"
+                app:tint="#111B21" />
+        </LinearLayout>
+
+        <!-- 2. ACTIVE CAMPAIGN WORKSPACE -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/layoutWorkspace"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="14dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="#1F2C34"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp">
+                android:orientation="vertical">
 
-                <LinearLayout
+                <!-- Audience / Group Selection Card -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="1. WhatsApp Device Linking"
-                        android:textColor="#00A884"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Official pairing code connection directly to WhatsApp Web"
-                        android:textColor="#8696A0"
-                        android:textSize="12sp" />
+                    app:cardBackgroundColor="#1F2C34"
+                    app:cardCornerRadius="12dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal">
-
-                        <EditText
-                            android:id="@+id/etSenderPhone"
-                            android:layout_width="0dp"
-                            android:layout_height="48dp"
-                            android:layout_weight="1"
-                            android:background="#111B21"
-                            android:hint="Your Phone (+91...)"
-                            android:inputType="phone"
-                            android:paddingHorizontal="12dp"
-                            android:textColor="#E9EDEF"
-                            android:textColorHint="#8696A0"
-                            android:textSize="14sp" />
-
-                        <Button
-                            android:id="@+id/btnPairCode"
-                            android:layout_width="wrap_content"
-                            android:layout_height="48dp"
-                            android:layout_marginStart="8dp"
-                            android:backgroundTint="#00A884"
-                            android:text="Get Code"
-                            android:textColor="#111B21"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <!-- Real 8-Digit Display -->
-                    <LinearLayout
-                        android:id="@+id/layoutPairingResult"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:background="#111B21"
-                        android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="12dp"
-                        android:visibility="gone">
+                        android:padding="16dp">
 
-                        <TextView
-                            android:id="@+id/tvCodeDisplay"
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:letterSpacing="0.2"
-                            android:textColor="#25D366"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
+                            android:gravity="center_vertical">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                            <TextView
+                                android:id="@+id/tvTargetGroupLabel"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Target Group"
+                                android:textColor="#00A884"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <Button
+                                android:id="@+id/btnAddNumbersModal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="36dp"
+                                android:backgroundTint="#00A884"
+                                android:text="+ Add Numbers"
+                                android:textColor="#111B21"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <Spinner
+                            android:id="@+id/spGroups"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_marginTop="10dp"
+                            android:background="#111B21" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Enter this in WhatsApp -> Linked Devices -> Link with Phone"
-                            android:textColor="#8696A0"
-                            android:textSize="11sp" />
+                            android:layout_marginTop="8dp"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/tvGroupStats"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="0 / 300 members"
+                                android:textColor="#8696A0"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/btnViewMembersList"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:padding="4dp"
+                                android:text="Manage Members ➔"
+                                android:textColor="#53BDEB"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
                     </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                </androidx.cardview.widget.CardView>
 
-            <!-- 2. Target Group & Member List Management -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                app:cardBackgroundColor="#1F2C34"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp">
-
-                <LinearLayout
+                <!-- Message & Media Card -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:layout_marginTop="14dp"
+                    app:cardBackgroundColor="#1F2C34"
+                    app:cardCornerRadius="12dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical">
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:id="@+id/tvMessageLabel"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="2. Audience &amp; Recipients"
+                            android:text="Message Content"
                             android:textColor="#00A884"
                             android:textSize="15sp"
                             android:textStyle="bold" />
 
-                        <Button
-                            android:id="@+id/btnAddMembersAction"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:backgroundTint="#00A884"
-                            android:text="+ Add Numbers"
-                            android:textColor="#111B21"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <Spinner
-                        android:id="@+id/spGroups"
-                        android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:layout_marginTop="10dp"
-                        android:background="#111B21" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:id="@+id/tvGroupStats"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="0 recipients in this group"
-                            android:textColor="#8696A0"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/btnViewMembersList"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:padding="4dp"
-                            android:text="View / Remove Numbers ➔"
-                            android:textColor="#53BDEB"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- 3. Message Compose & Authentic WhatsApp Preview -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                app:cardBackgroundColor="#1F2C34"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3. Message &amp; Media"
-                        android:textColor="#00A884"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/etMessageInput"
-                        android:layout_width="match_parent"
-                        android:layout_height="90dp"
-                        android:layout_marginTop="10dp"
-                        android:background="#111B21"
-                        android:gravity="top|start"
-                        android:hint="Type message or media caption..."
-                        android:padding="12dp"
-                        android:textColor="#E9EDEF"
-                        android:textColorHint="#8696A0"
-                        android:textSize="14sp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <Button
-                            android:id="@+id/btnAttachMedia"
-                            android:layout_width="wrap_content"
-                            android:layout_height="38dp"
-                            android:backgroundTint="#111B21"
-                            android:text="📎 Attach Media"
+                        <EditText
+                            android:id="@+id/etMessageInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="80dp"
+                            android:layout_marginTop="8dp"
+                            android:background="#111B21"
+                            android:gravity="top|start"
+                            android:hint="Type message or media caption..."
+                            android:padding="10dp"
                             android:textColor="#E9EDEF"
-                            android:textSize="12sp" />
+                            android:textColorHint="#8696A0"
+                            android:textSize="14sp" />
 
-                        <TextView
-                            android:id="@+id/tvMediaStatus"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:layout_weight="1"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="No file attached"
-                            android:textColor="#8696A0"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <!-- Authentic WhatsApp Wallpaper Preview Container -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:text="WhatsApp Real-Time Chat Preview"
-                        android:textColor="#8696A0"
-                        android:textSize="12sp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:background="#0B141A"
-                        android:gravity="end"
-                        android:padding="12dp">
-
-                        <!-- Real WhatsApp Green Outgoing Bubble -->
                         <LinearLayout
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="40dp"
-                            android:background="#005C4B"
-                            android:orientation="vertical"
-                            android:padding="6dp">
+                            android:layout_marginTop="10dp"
+                            android:gravity="center_vertical">
 
-                            <ImageView
-                                android:id="@+id/ivPreviewMedia"
-                                android:layout_width="240dp"
-                                android:layout_height="160dp"
-                                android:scaleType="centerCrop"
-                                android:visibility="gone" />
+                            <Button
+                                android:id="@+id/btnAttachMedia"
+                                android:layout_width="wrap_content"
+                                android:layout_height="36dp"
+                                android:backgroundTint="#111B21"
+                                android:text="📎 Attach Media"
+                                android:textColor="#E9EDEF"
+                                android:textSize="12sp" />
 
                             <TextView
-                                android:id="@+id/tvPreviewText"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/tvMediaStatus"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_marginHorizontal="4dp"
-                                android:layout_marginTop="4dp"
-                                android:maxWidth="240dp"
-                                android:text="Hello, this is your preview!"
-                                android:textColor="#E9EDEF"
-                                android:textSize="14sp" />
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:text="No file attached"
+                                android:textColor="#8696A0"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <!-- WhatsApp Real-Time Chat Bubble Preview -->
+                        <TextView
+                            android:id="@+id/tvPreviewLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:text="WhatsApp Live Preview"
+                            android:textColor="#8696A0"
+                            android:textSize="12sp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:background="#0B141B"
+                            android:gravity="end"
+                            android:padding="10dp">
 
                             <LinearLayout
+                                android:id="@+id/layoutPreviewBubble"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_gravity="end"
-                                android:layout_marginTop="2dp"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
+                                android:layout_marginStart="36dp"
+                                android:background="#005C4B"
+                                android:orientation="vertical"
+                                android:padding="6dp">
+
+                                <ImageView
+                                    android:id="@+id/ivPreviewMedia"
+                                    android:layout_width="220dp"
+                                    android:layout_height="140dp"
+                                    android:scaleType="centerCrop"
+                                    android:visibility="gone" />
 
                                 <TextView
-                                    android:id="@+id/tvPreviewTime"
+                                    android:id="@+id/tvPreviewText"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="07:55 PM"
-                                    android:textColor="#8696A0"
-                                    android:textSize="11sp" />
+                                    android:layout_marginHorizontal="4dp"
+                                    android:layout_marginTop="4dp"
+                                    android:maxWidth="220dp"
+                                    android:text="Hello, preview here..."
+                                    android:textColor="#E9EDEF"
+                                    android:textSize="14sp" />
 
-                                <TextView
+                                <LinearLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="4dp"
-                                    android:text="✓✓"
-                                    android:textColor="#53BDEB"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold" />
+                                    android:layout_gravity="end"
+                                    android:layout_marginTop="2dp"
+                                    android:gravity="center_vertical">
+
+                                    <TextView
+                                        android:id="@+id/tvPreviewTime"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="09:30 PM"
+                                        android:textColor="#8696A0"
+                                        android:textSize="11sp" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="4dp"
+                                        android:text="✓✓"
+                                        android:textColor="#53BDEB"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                </androidx.cardview.widget.CardView>
 
-            <!-- 4. Anti-Ban Human Delay Settings -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                app:cardBackgroundColor="#1F2C34"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp">
-
-                <LinearLayout
+                <!-- Per-Group Anti-Ban Delay Control -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:layout_marginTop="14dp"
+                    app:cardBackgroundColor="#1F2C34"
+                    app:cardCornerRadius="12dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Anti-Ban Protection (Human Behavior)"
-                        android:textColor="#00A884"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvDelayDisplay"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Delay between messages: 5 to 10 seconds"
-                        android:textColor="#8696A0"
-                        android:textSize="12sp" />
-
-                    <SeekBar
-                        android:id="@+id/sbDelay"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:max="20"
-                        android:progress="5" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
-            <!-- 5. Dispatch Action Button & Progress -->
-            <Button
-                android:id="@+id/btnStartDispatch"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="18dp"
-                android:layout_marginBottom="24dp"
-                android:backgroundTint="#00A884"
-                android:text="Start Silent Broadcast"
-                android:textColor="#111B21"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvAntiBanLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Anti-Ban Speed Control"
+                            android:textColor="#00A884"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvLiveCounter"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="#25D366"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
+                        <TextView
+                            android:id="@+id/tvDelayDisplay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Delay: 6 to 11 seconds (Human Behavior)"
+                            android:textColor="#8696A0"
+                            android:textSize="12sp" />
 
-            <!-- Hidden Headless Engine WebView -->
-            <WebView
-                android:id="@+id/headlessWebView"
-                android:layout_width="1dp"
-                android:layout_height="1dp"
-                android:visibility="invisible" />
+                        <SeekBar
+                            android:id="@+id/sbDelay"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:max="25"
+                            android:progress="6" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+                <!-- Start Broadcast Trigger -->
+                <Button
+                    android:id="@+id/btnStartDispatch"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="32dp"
+                    android:backgroundTint="#00A884"
+                    android:text="Start Broadcast"
+                    android:textColor="#111B21"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
 
+        <!-- New Group Floating Action Button (Always Accessible) -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAddGroupCorner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:backgroundTint="#00A884"
+            android:src="@android:drawable/ic_input_add"
+            app:tint="#111B21" />
+
+    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
