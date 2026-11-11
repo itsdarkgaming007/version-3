@@ -3,18 +3,17 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#0B141B">
+    android:layout_height="match_parent">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#1F2C34">
+        android:layout_height="wrap_content">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/mainToolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize">
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimaryVariant">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -23,13 +22,22 @@
                 android:orientation="horizontal"
                 android:paddingEnd="16dp">
 
+                <ImageView
+                    android:id="@+id/btnBackToGroups"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:padding="6dp"
+                    android:src="@android:drawable/ic_menu_revert"
+                    android:visibility="gone"
+                    app:tint="#FFFFFF" />
+
                 <TextView
                     android:id="@+id/tvAppTitle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="QuickSender Pro"
-                    android:textColor="#E9EDEF"
+                    android:textColor="#FFFFFF"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
@@ -39,7 +47,7 @@
                     android:layout_height="36dp"
                     android:padding="6dp"
                     android:src="@android:drawable/ic_menu_manage"
-                    app:tint="#AEBAC1" />
+                    app:tint="#FFFFFF" />
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -49,128 +57,153 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- 1. EMPTY STATE (When 0 groups exist) -->
+        <!-- VIEW 1: HOME GROUPS STACK -->
         <LinearLayout
-            android:id="@+id/layoutEmptyState"
+            android:id="@+id/viewHomeGroups"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="32dp"
-            android:visibility="gone">
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvEmptyTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="No Groups Created Yet"
-                android:textColor="#E9EDEF"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+            <ListView
+                android:id="@+id/lvGroupStack"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@android:color/transparent"
+                android:dividerHeight="8dp"
+                android:padding="12dp" />
 
+            <!-- Empty State -->
             <TextView
-                android:id="@+id/tvEmptyDesc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:id="@+id/tvNoGroupsNotice"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="Tap the + button to create a group (up to 300 members per group)"
-                android:textColor="#8696A0"
-                android:textSize="13sp" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fabCreateFirstGroup"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:backgroundTint="#00A884"
-                android:src="@android:drawable/ic_input_add"
-                app:elevation="6dp"
-                app:fabCustomSize="64dp"
-                app:tint="#111B21" />
+                android:text="No Groups Yet\nTap + to create your first group"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="16sp"
+                android:visibility="gone" />
         </LinearLayout>
 
-        <!-- 2. ACTIVE CAMPAIGN WORKSPACE -->
+        <!-- VIEW 2: GROUP DETAILS & CAMPAIGN WORKSPACE -->
         <androidx.core.widget.NestedScrollView
-            android:id="@+id/layoutWorkspace"
+            android:id="@+id/viewGroupDetail"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="14dp">
+            android:padding="14dp"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Audience / Group Selection Card -->
+                <!-- WhatsApp Client Selector (Regular vs Business) -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="#1F2C34"
-                    app:cardCornerRadius="12dp">
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="14dp">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical">
+                            android:text="Choose WhatsApp Engine"
+                            android:textColor="#00A884"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
-                            <TextView
-                                android:id="@+id/tvTargetGroupLabel"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Target Group"
-                                android:textColor="#00A884"
-                                android:textSize="15sp"
-                                android:textStyle="bold" />
-
-                            <Button
-                                android:id="@+id/btnAddNumbersModal"
-                                android:layout_width="wrap_content"
-                                android:layout_height="36dp"
-                                android:backgroundTint="#00A884"
-                                android:text="+ Add Numbers"
-                                android:textColor="#111B21"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <Spinner
-                            android:id="@+id/spGroups"
-                            android:layout_width="match_parent"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="10dp"
-                            android:background="#111B21" />
-
-                        <LinearLayout
+                        <RadioGroup
+                            android:id="@+id/rgWhatsAppType"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/rbNormalWA"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:checked="true"
+                                android:text="WhatsApp" />
+
+                            <RadioButton
+                                android:id="@+id/rbBusinessWA"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="WA Business" />
+                        </RadioGroup>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Members Header Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:gravity="center_vertical">
 
                             <TextView
-                                android:id="@+id/tvGroupStats"
+                                android:id="@+id/tvCurrentGroupName"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Group Name"
+                                android:textColor="#00A884"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <Button
+                                android:id="@+id/btnAddMembersModal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="36dp"
+                                android:backgroundTint="#00A884"
+                                android:text="+ Add Members"
+                                android:textColor="#FFFFFF"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/tvGroupMembersCount"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="0 / 300 members"
-                                android:textColor="#8696A0"
+                                android:textColor="?android:attr/textColorSecondary"
                                 android:textSize="12sp" />
 
                             <TextView
-                                android:id="@+id/btnViewMembersList"
+                                android:id="@+id/btnManageMembers"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:clickable="true"
                                 android:focusable="true"
-                                android:padding="4dp"
-                                android:text="Manage Members ➔"
+                                android:text="View / Remove ➔"
                                 android:textColor="#53BDEB"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -178,165 +211,189 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
-                <!-- Message & Media Card -->
+                <!-- Message Compose Card -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    app:cardBackgroundColor="#1F2C34"
-                    app:cardCornerRadius="12dp">
+                    android:layout_marginTop="12dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="14dp">
 
                         <TextView
-                            android:id="@+id/tvMessageLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Message Content"
+                            android:text="Message / Caption"
                             android:textColor="#00A884"
-                            android:textSize="15sp"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <EditText
-                            android:id="@+id/etMessageInput"
+                            android:id="@+id/etMessageBody"
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
-                            android:layout_marginTop="8dp"
-                            android:background="#111B21"
+                            android:layout_marginTop="6dp"
+                            android:background="@android:drawable/editbox_background_normal"
                             android:gravity="top|start"
                             android:hint="Type message or media caption..."
-                            android:padding="10dp"
-                            android:textColor="#E9EDEF"
-                            android:textColorHint="#8696A0"
+                            android:padding="8dp"
                             android:textSize="14sp" />
 
+                        <!-- Multi-Media Type Selection Row -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:gravity="center_vertical">
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
 
                             <Button
-                                android:id="@+id/btnAttachMedia"
-                                android:layout_width="wrap_content"
-                                android:layout_height="36dp"
-                                android:backgroundTint="#111B21"
-                                android:text="📎 Attach Media"
-                                android:textColor="#E9EDEF"
-                                android:textSize="12sp" />
-
-                            <TextView
-                                android:id="@+id/tvMediaStatus"
+                                android:id="@+id/btnAttachImage"
                                 android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="10dp"
+                                android:layout_height="38dp"
                                 android:layout_weight="1"
-                                android:ellipsize="end"
-                                android:maxLines="1"
-                                android:text="No file attached"
-                                android:textColor="#8696A0"
-                                android:textSize="12sp" />
+                                android:backgroundTint="#202C33"
+                                android:text="🖼️ Image"
+                                android:textColor="#FFFFFF"
+                                android:textSize="11sp" />
+
+                            <Button
+                                android:id="@+id/btnAttachVideo"
+                                android:layout_width="0dp"
+                                android:layout_height="38dp"
+                                android:layout_marginStart="4dp"
+                                android:layout_weight="1"
+                                android:backgroundTint="#202C33"
+                                android:text="🎥 Video"
+                                android:textColor="#FFFFFF"
+                                android:textSize="11sp" />
+
+                            <Button
+                                android:id="@+id/btnAttachAudio"
+                                android:layout_width="0dp"
+                                android:layout_height="38dp"
+                                android:layout_marginStart="4dp"
+                                android:layout_weight="1"
+                                android:backgroundTint="#202C33"
+                                android:text="🎵 Audio"
+                                android:textColor="#FFFFFF"
+                                android:textSize="11sp" />
                         </LinearLayout>
 
-                        <!-- WhatsApp Real-Time Chat Bubble Preview -->
                         <TextView
-                            android:id="@+id/tvPreviewLabel"
+                            android:id="@+id/tvMediaStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="No media attached"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:textSize="11sp" />
+
+                        <!-- WhatsApp Live Preview Bubble -->
+                        <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
-                            android:text="WhatsApp Live Preview"
-                            android:textColor="#8696A0"
+                            android:layout_marginTop="10dp"
+                            android:text="Live Preview"
+                            android:textColor="?android:attr/textColorSecondary"
                             android:textSize="12sp" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:background="#0B141B"
+                            android:layout_marginTop="4dp"
+                            android:background="#121B22"
                             android:gravity="end"
-                            android:padding="10dp">
+                            android:padding="8dp">
 
                             <LinearLayout
-                                android:id="@+id/layoutPreviewBubble"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="36dp"
+                                android:layout_marginStart="40dp"
                                 android:background="#005C4B"
                                 android:orientation="vertical"
                                 android:padding="6dp">
 
                                 <ImageView
                                     android:id="@+id/ivPreviewMedia"
-                                    android:layout_width="220dp"
-                                    android:layout_height="140dp"
+                                    android:layout_width="200dp"
+                                    android:layout_height="120dp"
                                     android:scaleType="centerCrop"
+                                    android:visibility="gone" />
+
+                                <TextView
+                                    android:id="@+id/tvPreviewAudio"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:padding="6dp"
+                                    android:text="🎵 Audio File Attached"
+                                    android:textColor="#E9EDEF"
+                                    android:textSize="12sp"
                                     android:visibility="gone" />
 
                                 <TextView
                                     android:id="@+id/tvPreviewText"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginHorizontal="4dp"
-                                    android:layout_marginTop="4dp"
-                                    android:maxWidth="220dp"
+                                    android:layout_marginTop="2dp"
+                                    android:maxWidth="200dp"
                                     android:text="Hello, preview here..."
                                     android:textColor="#E9EDEF"
-                                    android:textSize="14sp" />
+                                    android:textSize="13sp" />
 
                                 <LinearLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="end"
-                                    android:layout_marginTop="2dp"
                                     android:gravity="center_vertical">
 
                                     <TextView
-                                        android:id="@+id/tvPreviewTime"
+                                        android:id="@+id/tvPreviewClock"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="09:30 PM"
+                                        android:text="10:00 PM"
                                         android:textColor="#8696A0"
-                                        android:textSize="11sp" />
+                                        android:textSize="10sp" />
 
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_marginStart="4dp"
+                                        android:layout_marginStart="3dp"
                                         android:text="✓✓"
                                         android:textColor="#53BDEB"
-                                        android:textSize="12sp"
-                                        android:textStyle="bold" />
+                                        android:textSize="11sp" />
                                 </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
-                <!-- Per-Group Anti-Ban Delay Control -->
+                <!-- Anti-Ban Delay Control -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    app:cardBackgroundColor="#1F2C34"
-                    app:cardCornerRadius="12dp">
+                    android:layout_marginTop="12dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="14dp">
 
                         <TextView
-                            android:id="@+id/tvAntiBanLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Anti-Ban Speed Control"
+                            android:text="Anti-Ban Speed (Human Delay)"
                             android:textColor="#00A884"
-                            android:textSize="15sp"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -344,15 +401,15 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="Delay: 6 to 11 seconds (Human Behavior)"
-                            android:textColor="#8696A0"
+                            android:text="Delay: 6 to 11 seconds"
+                            android:textColor="?android:attr/textColorSecondary"
                             android:textSize="12sp" />
 
                         <SeekBar
                             android:id="@+id/sbDelay"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="6dp"
                             android:max="25"
                             android:progress="6" />
                     </LinearLayout>
@@ -362,27 +419,27 @@
                 <Button
                     android:id="@+id/btnStartDispatch"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="14dp"
                     android:layout_marginBottom="32dp"
                     android:backgroundTint="#00A884"
                     android:text="Start Broadcast"
-                    android:textColor="#111B21"
+                    android:textColor="#FFFFFF"
                     android:textSize="15sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- New Group Floating Action Button (Always Accessible) -->
+        <!-- Right Bottom Floating Action Button to Add Group -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabAddGroupCorner"
+            android:id="@+id/fabAddGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
+            android:layout_margin="20dp"
             android:backgroundTint="#00A884"
             android:src="@android:drawable/ic_input_add"
-            app:tint="#111B21" />
+            app:tint="#FFFFFF" />
 
     </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
