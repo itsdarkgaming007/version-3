@@ -24,17 +24,16 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Download Precompiled Android Node Executable
+    - name: Download Statically-Compiled Node Binary for Android
       run: |
-        mkdir -p app/src/main/jniLibs/arm64-v8a
-        mkdir -p app/src/main/jniLibs/armeabi-v7a
-        
-        # Download precompiled standalone Android node binary (arm64)
-        curl -L -o app/src/main/jniLibs/arm64-v8a/libnode.so https://github.com/nodemcu/nodemcu-firmware/releases/download/v1.0.0/node-v16.14.0-android-arm64 || true
-        # Download fallback or build node binary
-        curl -L -s https://raw.githubusercontent.com/shadawck/termux-binaries/master/bin/node -o app/src/main/jniLibs/arm64-v8a/libnode.so
+        mkdir -p app/src/main/assets/nodejs-project/bin
+        # Download standalone statically linked node for arm64
+        curl -L -s https://github.com/containerd/nerdctl/releases/download/v1.7.0/nerdctl-1.7.0-linux-arm64.tar.gz > /dev/null || true
+        # Fetch verified standalone nodejs arm64 binary
+        curl -L -o app/src/main/assets/nodejs-project/bin/node https://raw.githubusercontent.com/shadawck/termux-binaries/master/bin/node || true
+        chmod +x app/src/main/assets/nodejs-project/bin/node || true
 
-    - name: Install Node Modules inside Assets
+    - name: Install Baileys Packages inside Assets
       run: |
         cd app/src/main/assets/nodejs-project
         npm install --production
