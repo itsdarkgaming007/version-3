@@ -1,10 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Dark Theme -->
     <style name="Theme.QuickSender" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">#00A884</item>
-        <item name="colorPrimaryVariant">#008069</item>
+        <item name="colorPrimaryVariant">#1F2C34</item>
         <item name="colorOnPrimary">#111B21</item>
-        <item name="android:windowBackground">#0B141B</item>
+        <item name="android:statusBarColor">#1F2C34</item>
+        
+        <!-- Theme-aware colors -->
         <item name="colorSurface">#1F2C34</item>
         <item name="colorOnSurface">#E9EDEF</item>
+        <item name="android:windowBackground">#0B141B</item>
     </style>
 </resources>
